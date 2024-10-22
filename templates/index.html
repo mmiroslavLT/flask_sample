@@ -1,0 +1,24 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>First Page</title>
+    <script>
+        function fetchSecondPage() {
+            fetch('/fetch-page')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('content').innerHTML = data;
+                });
+        }
+    </script>
+</head>
+
+<body>
+    <h1>First Page</h1>
+    <button onclick="fetchSecondPage()">Load Second Page</button>
+    <div id="content"></div>
+</body>
+
+</html>

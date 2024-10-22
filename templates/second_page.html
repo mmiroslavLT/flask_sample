@@ -1,0 +1,19 @@
+<!-- templates/second_page.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{ title }}</title>
+</head>
+
+<body>
+    <h1>{{ title }}</h1>
+    <h2>Request Headers:</h2>
+    <ul>
+        {% for header, value in headers.items() %}
+        <li><strong>{{ header }}:</strong> {{ value }}</li>
+        {% endfor %}
+    </ul>
+</body>
+
+</html>
