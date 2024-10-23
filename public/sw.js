@@ -1,5 +1,6 @@
 // public/sw.js
-const AUTH_HEADER = 'Basic ' + btoa('username:password'); // Replace with your auth credentials
+// Store the authorization header value
+let storedAuthHeader = null;
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();
@@ -12,36 +13,41 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const request = event.request;
 
-    // Check if request already has auth headers
+    // If this request has an Authorization header, store it for future use
     if (request.headers.has('Authorization')) {
+        storedAuthHeader = request.headers.get('Authorization');
         return;
     }
 
-    // Clone the request to modify headers
-    const modifiedRequest = new Request(request.url, {
-        method: request.method,
-        headers: {
-            ...Object.fromEntries(request.headers),
-            'Authorization': AUTH_HEADER
-        },
-        mode: request.mode,
-        credentials: request.credentials,
-        redirect: request.redirect
-    });
+    // If we have a stored Authorization header, add it to the request
+    if (storedAuthHeader) {
+        // Clone the request to modify headers
+        const modifiedRequest = new Request(request.url, {
+            method: request.method,
+            headers: {
+                ...Object.fromEntries(request.headers),
+                'Authorization': storedAuthHeader
+            },
+            mode: request.mode,
+            credentials: request.credentials,
+            redirect: request.redirect
+        });
 
-    event.respondWith(
-        fetch(modifiedRequest)
-            .then(response => {
-                // Check if response indicates auth failure
-                if (response.status === 401) {
-                    // You could handle auth failure here
-                    console.error('Authentication failed');
-                }
-                return response;
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                throw error;
-            })
-    );
+        event.respondWith(
+            fetch(modifiedRequest)
+                .then(response => {
+                    // Check if response indicates auth failure
+                    if (response.status === 401) {
+                        // Clear stored header if authentication fails
+                        storedAuthHeader = null;
+                        console.error('Authentication failed');
+                    }
+                    return response;
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    throw error;
+                })
+        );
+    }
 });
